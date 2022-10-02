@@ -1,290 +1,235 @@
-import React, { Component } from "react";
-import axios from "axios";
-import API_KEY from "../secrete";
-export default class Favourites extends Component {
-    constructor() {
+import React, { Component } from 'react'
+ 
+
+
+export default class Favorites extends Component {
+    constructor(){
         super();
-        this.state = {
-            movies: [],
-            genre: [],
-            currGenre: "All Genre",
-            currText: "",
+        this.state={
+
+            movies:[],
+             
+            genreList:[], 
+            currgenre:0,
+            currsearch:"",
+             
             limit: 5,
-            currPage: 1,
-        };
+            curPage:1
+
+        }
     }
 
-    async componentDidMount() {
-        // let ans = await axios.get(
-        //   `https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}d&language=en-US&page=1`
-        // );
-        let results = JSON.parse(localStorage.getItem("movies"));
-        let genreId = {
-            28: "Action",
-            12: "Adventure",
-            16: "Animation",
-            35: "Comedy",
-            80: "Crime",
-            99: "Documentary",
-            18: "Drama",
-            10751: "Family",
-            14: "Fantasy",
-            36: "History",
-            27: "Horror",
-            10402: "Music",
-            9648: "Mystery",
-            10749: "Romance",
-            878: "Sci-Fi",
-            10770: "TV",
-            53: "Thriller",
-            10752: "War",
-            37: "Western",
-        };
-        let genreArr = [];
-        results.map((movieObj) => {
-            if (!genreArr.includes(genreId[movieObj.genre_ids[0]])) {
-                genreArr.push(genreId[movieObj.genre_ids[0]]);
-            }
-        });
+   changeMovies = () =>{
+    const moviesList = JSON.parse(localStorage.getItem("movies"));
+    const tempgenreList = [0]
+   
+    
+    moviesList.map(mobj =>{
+      if(!tempgenreList.includes(mobj.genre_ids[0]))
+      tempgenreList.push(mobj.genre_ids[0]);
+    })
+    this.setState({
+      movies:[...moviesList],
+      genreList:[...tempgenreList]
+    });
 
-        genreArr.unshift("All Genre");
-        // console.log(genreArr);
-        this.setState({
-            movies: [...results], //[{},{},{}]
-            genre: [...genreArr],
-        });
-    }
+    console.log(this.state.movies);
+    
+    
+    
+  }
 
-    handleCurrGenre = (genre) => {
-        this.setState({
-            currGenre: genre,
-        });
-        // movies filter movies setstate
-    };
+handleSearch = event =>{
 
-    handleText = (e) => {
-        this.setState({
-            currText: e.target.value,
-        });
-    };
+  const searchText = event.target.value.trim().toLowerCase();
+  
+  
 
-    sortPopularityAsc = () => {
-        let allMovies = this.state.movies;
-        allMovies.sort((objA, objB) => {
-            return objA.popularity - objB.popularity;
-        });
-        this.setState({
-            movies: [...allMovies],
-        });
-    };
 
-    sortPopularityDesc = () => {
-        let allMovies = this.state.movies;
-        allMovies.sort((objA, objB) => {
-            return objB.popularity - objA.popularity;
-        });
-        this.setState({
-            movies: [...allMovies],
-        });
-    };
-    sortRatingAsc = () => {
-        let allMovies = this.state.movies;
-        allMovies.sort((objA, objB) => {
-            return objA.vote_average - objB.vote_average;
-        });
-        this.setState({
-            movies: [...allMovies],
-        });
-    };
+  this.setState({
+    currsearch:searchText,
+  });
+  
+  console.log(this.state.currsearch);
+  
+}
 
-    sortRatingDesc = () => {
-        let allMovies = this.state.movies;
-        allMovies.sort((objA, objB) => {
-            return objB.vote_average - objA.vote_average;
-        });
-        this.setState({
-            movies: [...allMovies],
-        });
-    };
+handleLimit =   event =>{
+  
+  const newLimit = event?Math.max(1,event.target.value ):this.state.limit;
+  if(event)event.target.value = newLimit;
 
-    handlePageNum = (page) => {
-        this.setState({
-            currPage: page,
-        });
-    };
+  
+  
+  
+  let movie =  this.state.movies.filter(movieObj => (movieObj.original_title.toLowerCase().includes(this.state.currsearch)) && (this.state.currgenre==0 || movieObj.genre_ids.includes(this.state.currgenre) ));
+  
+  
+  //console.log(movie );
+  
 
-    handleDelete = (id) => {
-        let newMovies = this.state.movies.filter((movieObj) => {
-            return movieObj.id != id;
-        });
-        this.setState({
-            movies: [...newMovies]
-        })
-        localStorage.setItem("movies", JSON.stringify(newMovies));
+  
+  
 
-    }
+  this.setState({
+    limit:newLimit,
+     
+     
+  });
+  
+  console.log(this.state.pageAr);
+  
+}
+
+handleDelete = id =>{
+  const newls = JSON.parse(localStorage.getItem("movies")).filter(movie=>movie.id!=id);
+
+  localStorage.setItem("movies",JSON.stringify(newls));
+
+  this.changeMovies();
+}
+
+handleSort = (param, order)=>{
+     let tempMovies = this.state.movies;
+
+     tempMovies.sort((a,b)=>order*(a[param]-b[param]));
+
+     this.setState({
+       movies:[...tempMovies]
+     });
+}
+addgenre = (genre)=>{
+  this.setState({
+    currgenre: genre
+  });
+}
+   
+
+componentDidMount(){
+      
+     this.changeMovies();
+     this.handleLimit();
+     
+  }
 
     render() {
-        let genreId = {
-            28: "Action",
-            12: "Adventure",
-            16: "Animation",
-            35: "Comedy",
-            80: "Crime",
-            99: "Documentary",
-            18: "Drama",
-            10751: "Family",
-            14: "Fantasy",
-            36: "History",
-            27: "Horror",
-            10402: "Music",
-            9648: "Mystery",
-            10749: "Romance",
-            878: "Sci-Fi",
-            10770: "TV",
-            53: "Thriller",
-            10752: "War",
-            37: "Western",
-        };
-        let filteredMovies = this.state.movies;
 
-        if (this.state.currText === "") {
-            filteredMovies = this.state.movies;
-        } else {
-            filteredMovies = filteredMovies.filter((movieObj) => {
-                let movieName = movieObj.original_title.toLowerCase();
+        let genreId={0:'All Genre',28:'Action',12:'Adventure',16:'Animation',35:'Comedy',80:'Crime',99:'Documentary',18:'Drama',10751:'Family',14:'Fantasy',36:'History',
+                        27:'Horror',10402:'Music',9648:'Mystery',10749:'Romance',878:'Sci-Fi',10770:'TV',53:'Thriller',10752:'War',37:'Western'}
 
-                return movieName.includes(this.state.currText); //[t,o,p, ,g,u,n, ,m,a,v,e,r,i,c,k]
+        
+                        let movie = this.state.movies.filter(movieObj => (movieObj.original_title.toLowerCase().includes(this.state.currsearch)) && (this.state.currgenre==0 || movieObj.genre_ids.includes(this.state.currgenre) ));
 
-            });
+                        let si = (this.state.curPage - 1)*this.state.limit ;
+                        let ei = si + this.state.limit ; 
+
+                       let movieshow = movie.slice(si,ei);
+
+                       let numberpages = Math.ceil(movie.length / this.state.limit) ;
+   
+                  let pagear = [];
+                  for(let i = 1;i<=numberpages;i++)
+                  pagear.push(i);
+
+
+        
+                        return (
+            <>
+           
+  <div class="row" style={{padding:"3rem"}}>
+    <div class="col-3" >
+      
+      <div class="list-group">
+        {
+          this.state.genreList.map(genre=>
+          this.state.currgenre==genre?
+          (
+            <button type="button" class="list-group-item list-group-item-action active" >{genreId[genre]}</button>
+          ):
+          (
+           <button type="button" class="list-group-item list-group-item-action " onClick={() => {this.addgenre(genre)}}>{genreId[genre]}</button>
+
+          )
+          )
         }
+</div>
+    </div>
+    <div class="col" style={{paddingLeft:"5rem",paddingRight:"3rem"}}>
+      
+      <div class="col favourites-table" >
+          <div class="row">
+            <input type="text" className="col-8" placeholder="Search" onChange={this.handleSearch}></input>
+            <input type="number" className="col-4" placeholder="5" onChange={this.handleLimit}></input>
+          </div>
+          </div>
+      <table class="table">
+  <thead>
+    <tr style={{fontWeight:"bolder"}}>
+      <th scope="col-5">Title</th>
+                  <th scope="col">Genre</th>
+                  <th scope="col"> <i class="fa-solid fa-caret-down" onClick={()=>{this.handleSort("popularity",1)}}/> 
+                  Popularity 
+                  <i class="fa-solid fa-caret-up" onClick={()=>{this.handleSort("popularity",-1)}}/></th>
+                  
+                  <th scope="col"><i class="fa-solid fa-caret-down" onClick={()=>{this.handleSort("vote_average",1)}}/> 
+                  Rating  
+                  <i class="fa-solid fa-caret-up" onClick={()=>{this.handleSort("vote_average",-1)}}/></th>
+                  <th scope="col"/>     
+    </tr>
+  </thead>
+  <tbody>
+   {movieshow.length>0 ? 
+   movieshow.map((movieObj,index) => (
+                  <tr>
+                    <td scope="row">
+                      <img
+                        src={`https://image.tmdb.org/t/p/original${movieObj.backdrop_path}`}
+                        style={{ height:"6rem",width: "8rem" ,marginRight:"1rem", borderRadius:"1rem"}}
+                      />
+                      <span style={{fontWeight:"bold"}}>{movieObj.original_title}</span>
+                    </td>
+                    <td>{(this.state.currgenre==0)?genreId[movieObj.genre_ids[0]]:genreId[this.state.currgenre]}</td>
+                    <td> {movieObj.popularity}</td>
+                    <td>  {movieObj.vote_average}</td>
+                    <td>
+                      <button class="btn btn-outline-danger" onClick={()=>{this.handleDelete(movieObj.id)}}>Delete</button>
+                    </td>
+                  </tr>
+                )) : <p>No results found</p>}
+  </tbody>
+</table>
 
-        if (this.state.currGenre != "All Genre") {
-            filteredMovies = filteredMovies.filter(
-                (movieObj) => genreId[movieObj.genre_ids[0]] == this.state.currGenre
-            );
-        }
+<nav aria-label="...">
+  <ul class="pagination pagination-lg">
 
-        let numOfPages = Math.ceil(filteredMovies.length / this.state.limit);
-        let pagesArr = [];
-        for (let i = 1; i <= numOfPages; i++) {
-            pagesArr.push(i); //[1,2]
-        }
-        let si = (this.state.currPage - 1) * this.state.limit;
-        let ei = si + this.state.limit - 1;
-        filteredMovies = filteredMovies.slice(si, ei + 1);
+    {pagear.map(page=>
+    
+    
 
-        return (
-            <div className="row">
-                <div className="col-3 favourites-list">
-                    <ul className="list-group">
-                        {this.state.genre.map((genre) =>
-                            this.state.currGenre == genre ? (
-                                <li className="list-group-item active" aria-current="true">
-                                    {genre}
-                                </li>
-                            ) : (
-                                <li
-                                className="list-group-item"
-                                    aria-current="true"
-                                    onClick={() => this.handleCurrGenre(genre)}
-                                >
-                                    {genre}
-                                </li>
-                            )
-                        )}
-                    </ul>
-                </div>
-                <div className="col favourites-table">
-                    <div className="row">
-                        <input
-                            type="text"
-                            className="col-8"
-                            placeholder="Search"
-                            value={this.state.currText}
-                            onChange={this.handleText}
-                        ></input>
-                        <input
-                            type="number"
-                            className="col-4"
-                            value={this.state.limit}
-                            onChange={(e) => this.setState({ limit: e.target.value })}
-                        ></input>
-                    </div>
-                    <div className="row">
-                        <table className="table">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Title</th>
-                                    <th scope="col">Genre</th>
-                                    <th scope="col">
-                                        <i
-                                            className="fa-solid fa-caret-up"
-                                            onClick={this.sortPopularityAsc}
-                                        />
-                                        Popularity
-                                        <i
-                                            className="fa-solid fa-caret-down"
-                                            onClick={this.sortPopularityDesc}
-                                        />
-                                    </th>
-                                    <th scope="col">
-                                        <i
-                                            className="fa-solid fa-caret-up"
-                                            onClick={this.sortRatingAsc}
-                                        />
-                                        Rating
-                                        <i
-                                            className="fa-solid fa-caret-down"
-                                            onClick={this.sortRatingDesc}
-                                        />
-                                    </th>
-                                    <th scope="col"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {
-                                    filteredMovies.length > 0 ?
-                                        filteredMovies.map((movieObj) => (
-                                            <tr>
-                                                <td scope="row">
-                                                    <img
-                                                        src={`https://image.tmdb.org/t/p/original${movieObj.backdrop_path}`}
-                                                        style={{ width: "8rem" }}
-                                                    />
-                                                    {movieObj.original_title}
-                                                </td>
-                                                <td>{genreId[movieObj.genre_ids[0]]}</td>
-                                                <td>{movieObj.popularity}</td>
-                                                <td>{movieObj.vote_average}</td>
-                                                <td>
-                                                    <button
-                                                        className="btn btn-outline-danger"
-                                                        onClick={() => this.handleDelete(movieObj.id)}
-                                                    >
-                                                        Delete
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        )) : <p>No results found</p>}
+      this.state.curPage==page ?
+      
+      (<li class="page-item active" aria-current="page">
+      <span class="page-link" onClick={()=>{this.setState({curPage:page})}}>{page}</span>
+    </li>
+    ):
 
+    ( 
+      <li class="page-item" aria-current="page">
+    <span class="page-link" onClick={()=>{this.setState({curPage:page})}}>{page}</span>
+  </li>
+  
+    ) 
+      
+    )
+    }
+    
+    
+  </ul>
+</nav>
+    </div>
+  </div>
 
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <nav aria-label="Page navigation example">
-                    <ul class="pagination">
-                        {pagesArr.map((page) => (
-                            <li class="page-item">
-                                <a class="page-link" onClick={() => this.handlePageNum(page)}>
-                                    {page}
-                                </a>
-                            </li>
-                        ))}
-                    </ul>
-                </nav>
-            </div>
-        );
+            </>
+        )
     }
 }

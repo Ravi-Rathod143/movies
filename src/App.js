@@ -8,19 +8,18 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 function App() {
   return (
     <BrowserRouter>
-      <Navbar />
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <>
-              <Banner />
-              <List />
-            </>
-          }
-        />
-        <Route path="/fav" element={<Favourite />} />
-      </Routes>
+
+    <Navbar/>
+    
+    <Routes>
+
+    {/* <Route path="/" element={<Banner/>}/> */}
+    <Route path="/" element={<><Banner/><List/></>}/>
+    <Route path="/fav" element={<Favourite/>}/>
+    
+    
+    </Routes>
+
     </BrowserRouter>
   );
 }
